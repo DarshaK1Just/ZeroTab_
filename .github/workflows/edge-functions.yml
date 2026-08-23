@@ -29,7 +29,7 @@ env:
 
 jobs:
   deploy:
-    name: ⚡ Deploy market-data
+    name: ⚡ Deploy all Edge Functions
     runs-on: ubuntu-latest
 
     steps:
@@ -68,19 +68,24 @@ jobs:
           echo "Project ref: $ref"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
-      - name: 🚀 Deploy market-data function
+      - name: 🚀 Deploy every function under supabase/functions
         run: |
-          # We deploy without `supabase link` — link writes to .supabase/
-          # and can prompt for a DB password in some CLI versions, which
-          # hangs in non-interactive CI. Passing --project-ref directly
-          # to `functions deploy` is the canonical headless path.
-          supabase functions deploy market-data \
-            --project-ref "${{ steps.ref.outputs.ref }}" \
-            --no-verify-jwt
+          # Every top-level directory under supabase/functions is its own
+          # deployable function, except _shared (imported code, not a function).
+          for dir in supabase/functions/*/; do
+            name=$(basename "$dir")
+            [ "$name" = "_shared" ] && continue
+
+            echo ""
+            echo "── Deploying $name ──"
+            supabase functions deploy "$name" \
+              --project-ref "${{ steps.ref.outputs.ref }}" \
+              --no-verify-jwt
+          done
 
           echo ""
-          echo "✅ Deployed. The function is now live at:"
-          echo "   ${{ secrets.SUPABASE_URL }}/functions/v1/market-data"
+          echo "✅ Deployed. Functions are live under:"
+          echo "   ${{ secrets.SUPABASE_URL }}/functions/v1/<name>"
           echo ""
-          echo "Smoke test:"
+          echo "Smoke test market-data:"
           echo "   curl '${{ secrets.SUPABASE_URL }}/functions/v1/market-data?url=https%3A%2F%2Fquery1.finance.yahoo.com%2Fv8%2Ffinance%2Fchart%2FRELIANCE.NS%3Frange%3D1d%26interval%3D1m'"
