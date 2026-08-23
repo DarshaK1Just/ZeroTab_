@@ -169683,7 +169683,7 @@ A.aBu.prototype={
 $1(a){return A.bAt(t.a.a(a))},
 $S:226}
 A.atI.prototype={
-b7E(){var s=null,r=A.bBK(A.bAR("",B.Y_,s,B.Y7))
+b7E(){var s=null,r=A.bBK(A.bAR("https://jegpotribejwrclaiygy.supabase.co/functions/v1",B.Y_,s,B.Y7))
 this.a!==$&&A.b3()
 this.a=r
 r=r.cB$
